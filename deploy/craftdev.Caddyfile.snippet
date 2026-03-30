@@ -1,0 +1,19 @@
+# Fragment do istniejącego Caddy (masz już bankflay-caddy na :80 i :443).
+# Domena NIE zadziała sama z siebie — DNS musi wskazywać na IP VPS,
+# a Caddy musi mieć blok dla craftdev.pl, który proxy do portfolio na hoście.
+#
+# Portfolio nasłuchuje na HOŚCIE: 0.0.0.0:8009 (kontener portfolio-site).
+# Z wnętrza kontenera Caddy "localhost:8009" to NIE ten sam port — użyj hosta:
+#
+#   reverse_proxy host.docker.internal:8009
+#
+# W docker-compose serwisu Caddy dodaj (Compose v2+):
+#   extra_hosts:
+#     - "host.docker.internal:host-gateway"
+#
+# Alternatywa na Linuksie bez host-gateway: reverse_proxy 172.17.0.1:8009
+# (brama domyślnego bridge Dockera; jeśli nie działa, sprawdź: ip -4 addr show docker0)
+
+craftdev.pl, www.craftdev.pl {
+    reverse_proxy host.docker.internal:8009
+}

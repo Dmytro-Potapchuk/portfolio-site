@@ -1,9 +1,33 @@
 # Domena craftdev.pl — HTTPS (nie HTTP)
 
 Aplikacja w Dockerze nasłuchuje na **8009** (`http://127.0.0.1:8009`).  
-**HTTPS robi nginx na hoście:** certyfikat Let’s Encrypt + przekierowanie **HTTP → HTTPS**.
+**HTTPS** zwykle robi **reverse proxy** na porcie **443** (nginx na hoście **albo** Caddy w Dockerze).
 
-Pliki w tym katalogu:
+### Ważne: masz już Caddy na :80 i :443 (`bankflay-caddy`)
+
+Wtedy **osobny nginx na hoście na portach 80/443 nie zadziała** (porty zajęte).  
+**Domena `craftdev.pl` musi być dodana do konfiguracji Caddy**, który przekaże ruch na portfolio na hoście **:8009**.
+
+Gotowy fragment: **`deploy/craftdev.Caddyfile.snippet`**. W `docker-compose` Caddy dodaj:
+
+```yaml
+extra_hosts:
+  - "host.docker.internal:host-gateway"
+```
+
+Potem w Caddyfile:
+
+```caddyfile
+craftdev.pl, www.craftdev.pl {
+    reverse_proxy host.docker.internal:8009
+}
+```
+
+Przeładuj Caddy (`docker compose restart` w projekcie z Caddy). Caddy sam wyda certyfikat Let’s Encrypt dla tej domeny (gdy DNS już wskazuje na VPS).
+
+---
+
+Pliki w tym katalogu (gdy **nie** masz Caddy na 80/443 — tylko nginx na hoście):
 
 | Plik | Kiedy |
 |------|--------|
