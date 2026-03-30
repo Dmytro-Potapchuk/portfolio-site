@@ -51,7 +51,7 @@ This repo now includes production deployment assets:
 
 - `Dockerfile` (multi-stage build + nginx for SPA routing)
 - `nginx.conf` (cache + `try_files` for React Router)
-- `docker-compose.yml` (runs container on `${APP_PORT}`, default `8080`)
+- `docker-compose.yml` (runs container on host port **8009** → container 80)
 - `.github/workflows/deploy-vps-docker.yml` (build, push, deploy over SSH)
 
 ### Required GitHub secrets
@@ -64,7 +64,8 @@ Set these in your repository settings:
 - `VPS_PORT` (usually `22`)
 - `VPS_USER` (SSH user on VPS)
 - `VPS_SSH_KEY` (private key for the VPS user)
-- `VPS_APP_PORT` (for example: `8009`)
+
+Port **8009** jest ustawiony na stałe w workflow (żeby nie kolidował z innymi usługami na 8080 itd.).
 
 ### Deployment flow
 
@@ -74,4 +75,4 @@ On push to `main`, `master`, or `Dmytro-Potapchuk-patch-1`:
 2. Action connects to VPS via SSH
 3. VPS pulls latest image and runs `docker compose up -d`
 
-The app will be available on `http://<VPS_HOST>:<VPS_APP_PORT>`.
+The app will be available on `http://<VPS_HOST>:8009`.
