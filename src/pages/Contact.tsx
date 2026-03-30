@@ -1,22 +1,49 @@
 import { motion } from 'framer-motion';
 import ContactForm from '../components/ContactForm';
+import { useLanguage } from '../context/LanguageContext';
 
-const Contact = () => (
+const Contact = () => {
+  const { t } = useLanguage();
+
+  return (
     <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4 }}
-        className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white flex items-center justify-center px-4 py-12"
+      className="page-animate"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
     >
-        <div className="w-full max-w-xl bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
-            <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400">Kontakt</h1>
-            <p className="text-lg text-gray-700 dark:text-gray-300">
-                Masz pytania lub chcesz zamówić projekt? Wypełnij formularz, a odezwę się jak najszybciej.
-            </p>
-            <ContactForm />
+      <h1 className="page-title">{t.contact.title}</h1>
+      <div className="contact-layout">
+        <aside className="contact-aside" aria-label="Contact details">
+          <p>{t.contact.lead}</p>
+          <p>
+            <strong>{t.contact.emailLabel}:</strong>{' '}
+            <a href="mailto:dmytro.potapchuk.it@gmail.com">dmytro.potapchuk.it@gmail.com</a>
+          </p>
+          <p>
+            <strong>{t.contact.phoneLabel}:</strong> +48 507 340 438
+          </p>
+          <p>
+            <strong>{t.contact.locationLabel}:</strong> Warsaw, Poland
+          </p>
+          <p>
+            <strong>{t.contact.linksLabel}:</strong>{' '}
+            <a href="https://github.com/Dmytro-Potapchuk" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            {' · '}
+            <a href="https://www.linkedin.com/in/dmytro-potapchuk-43b410273/" target="_blank" rel="noreferrer">
+              LinkedIn
+            </a>
+          </p>
+        </aside>
+        <div className="contact-form-wrap">
+          <ContactForm />
         </div>
+      </div>
     </motion.div>
-);
+  );
+};
 
 export default Contact;
