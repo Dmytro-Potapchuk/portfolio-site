@@ -64,7 +64,7 @@ Set these in your repository settings:
 - `VPS_PORT` (usually `22`)
 - `VPS_USER` (SSH user on VPS)
 - `VPS_SSH_KEY` (private key for the VPS user)
-- `VPS_APP_PORT` (for example: `8080`)
+- `VPS_APP_PORT` (for example: `8009`)
 
 ### Deployment flow
 
