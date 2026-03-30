@@ -1,79 +1,98 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isDark, setIsDark] = useState(false);
+  const { t, language, setLanguage } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
 
-    useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-            setIsDark(true);
-        }
-    }, []);
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
 
-    const toggleTheme = () => {
-        const newTheme = isDark ? 'light' : 'dark';
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', newTheme);
-        setIsDark(!isDark);
-    };
+  useEffect(() => {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const dark = saved ? saved === 'dark' : prefersDark;
+    document.documentElement.classList.toggle('dark', dark);
+  }, []);
 
-    const toggleMenu = () => {
-        setIsOpen(!isOpen);
-    };
+  const toggleTheme = () => {
+    const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    document.documentElement.classList.toggle('dark', next === 'dark');
+    localStorage.setItem('theme', next);
+  };
 
-    return (
-        <nav className="bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                    ByteCraft.dev
-                </Link>
+  const links = [
+    { to: '/', label: t.nav.home },
+    { to: '/o-mnie', label: t.nav.about },
+    { to: '/technologie', label: t.nav.technologies },
+    { to: '/portfolio', label: t.nav.portfolio },
+    { to: '/uslugi', label: t.nav.services },
+    { to: '/kontakt', label: t.nav.contact },
+  ];
 
-                {/* Desktop menu */}
-                <div className="hidden md:flex items-center space-x-6">
-                    <Link to="/" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Home</Link>
-                    <Link to="/o-mnie" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">O mnie</Link>
-                    <Link to="/technologie" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Technologie</Link>
-                    <Link to="/portfolio" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Portfolio</Link>
-                    <Link to="/uslugi" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Usługi</Link>
-                    <Link to="/kontakt" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Kontakt</Link>
-                    <button
-                        onClick={toggleTheme}
-                        className="bg-gray-200 dark:bg-gray-700 text-sm px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                    >
-                        {isDark ? '☀️ Jasny' : '🌙 Ciemny'}
-                    </button>
-                </div>
+  return (
+    <header className="site-nav">
+      <div className="site-nav-inner">
+        <Link to="/" className="site-brand">
+          {t.brand}
+        </Link>
 
-                {/* Mobile burger */}
-                <div className="md:hidden flex items-center space-x-2">
-                    <button
-                        onClick={toggleTheme}
-                        className="bg-gray-200 dark:bg-gray-700 text-sm px-3 py-1 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                    >
-                        {isDark ? '☀️' : '🌙'}
-                    </button>
-                    <button onClick={toggleMenu} className="text-gray-700 dark:text-gray-200 focus:outline-none">
-                        ☰
-                    </button>
-                </div>
-            </div>
-
-            {/* Mobile menu dropdown */}
-            {isOpen && (
-                <div className="md:hidden bg-white dark:bg-gray-900 px-4 pb-4 space-y-2">
-                    <Link to="/" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Home</Link>
-                    <Link to="/o-mnie" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">O mnie</Link>
-                    <Link to="/technologie" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Technologie</Link>
-                    <Link to="/portfolio" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Portfolio</Link>
-                    <Link to="/uslugi" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Usługi</Link>
-                    <Link to="/kontakt" onClick={() => setIsOpen(false)} className="block text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">Kontakt</Link>
-                </div>
-            )}
+        <nav className="site-nav-links" aria-label="Primary">
+          {links.map(({ to, label }) => (
+            <Link key={to} to={to} className={location.pathname === to ? 'active' : undefined}>
+              {label}
+            </Link>
+          ))}
         </nav>
-    );
+
+        <div className="site-nav-actions">
+          <div className="lang-switch" role="group" aria-label="Language">
+            <button
+              type="button"
+              className={language === 'pl' ? 'active' : ''}
+              onClick={() => setLanguage('pl')}
+              aria-pressed={language === 'pl'}
+            >
+              🇵🇱
+            </button>
+            <button
+              type="button"
+              className={language === 'en' ? 'active' : ''}
+              onClick={() => setLanguage('en')}
+              aria-pressed={language === 'en'}
+            >
+              🇬🇧
+            </button>
+          </div>
+          <button type="button" className="theme-btn" onClick={toggleTheme} aria-label="Toggle theme">
+            🌓
+          </button>
+          <button
+            type="button"
+            className="burger"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div id="mobile-menu" className="site-nav-mobile">
+          {links.map(({ to, label }) => (
+            <Link key={to} to={to}>
+              {label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </header>
+  );
 };
 
 export default Navbar;

@@ -1,9 +1,17 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+function BrandProbe() {
+  const { t } = useLanguage();
+  return <span>{t.brand}</span>;
+}
+
+test('language provider exposes site brand', () => {
+  render(
+    <LanguageProvider>
+      <BrandProbe />
+    </LanguageProvider>
+  );
+  expect(screen.getByText(/Dmytro Potapchuk/i)).toBeInTheDocument();
 });

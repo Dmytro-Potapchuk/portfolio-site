@@ -44,3 +44,34 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Docker deployment (VPS)
+
+This repo now includes production deployment assets:
+
+- `Dockerfile` (multi-stage build + nginx for SPA routing)
+- `nginx.conf` (cache + `try_files` for React Router)
+- `docker-compose.yml` (runs container on `${APP_PORT}`, default `8080`)
+- `.github/workflows/deploy-vps-docker.yml` (build, push, deploy over SSH)
+
+### Required GitHub secrets
+
+Set these in your repository settings:
+
+- `DOCKERHUB_USERNAME` (for example: `keyn1990`)
+- `DOCKERHUB_TOKEN` (Docker Hub access token)
+- `VPS_HOST` (for example: `192.67.197.185`)
+- `VPS_PORT` (usually `22`)
+- `VPS_USER` (SSH user on VPS)
+- `VPS_SSH_KEY` (private key for the VPS user)
+- `VPS_APP_PORT` (for example: `8080`)
+
+### Deployment flow
+
+On push to `main`, `master`, or `Dmytro-Potapchuk-patch-1`:
+
+1. GitHub Actions builds image and pushes `keyn1990/portfolio-site:latest`
+2. Action connects to VPS via SSH
+3. VPS pulls latest image and runs `docker compose up -d`
+
+The app will be available on `http://<VPS_HOST>:<VPS_APP_PORT>`.

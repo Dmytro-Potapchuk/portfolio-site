@@ -1,48 +1,32 @@
 import { motion } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 
-const About = () => (
+const About = () => {
+  const { t } = useLanguage();
+
+  return (
     <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4 }}
-        className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-8 flex items-center justify-center"
+      className="page-animate"
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35 }}
     >
-        <div className="max-w-4xl w-full space-y-6">
-            <h1 className="text-4xl font-bold text-blue-700 dark:text-blue-400">O mnie</h1>
-            <div className="space-y-4 text-lg leading-relaxed">
-                <p>
-                    Nazywam się <strong>Dmytro Potapchuk</strong> i jestem Full-Stack Developerem z tytułem inżyniera informatyki. Od 2022 roku pracuję jako freelancer, realizując projekty dla klientów indywidualnych i firm z różnych branż.
-                </p>
-                <p>
-                    Specjalizuję się w tworzeniu aplikacji webowych i desktopowych, automatyzacji procesów biznesowych oraz integracjach z systemami zewnętrznymi. Posiadam praktyczne doświadczenie w budowie sklepów internetowych z częściami samochodowymi, systemach płatności, panelach administracyjnych i zarządzaniu produktami.
-                </p>
-                <p>
-                    W pracy wykorzystuję technologie takie jak <span className="text-blue-600 dark:text-blue-400">React</span>, <span className="text-blue-600 dark:text-blue-400">TypeScript</span>, <span className="text-blue-600 dark:text-blue-400">NestJS</span>, <span className="text-blue-600 dark:text-blue-400">.NET</span> oraz <strong>Docker</strong> i <strong>AWS</strong> do wdrażania aplikacji.
-                </p>
-                <p>
-                    Mam doświadczenie w pracy z bazami danych <strong>MySQL</strong>, <strong>PostgreSQL</strong>, <strong>MongoDB</strong> i <strong>SQLite</strong>. Tworzę wydajne REST API, wdrażam CI/CD i optymalizuję backend pod kątem skalowalności.
-                </p>
-                <p>
-                    Ukończyłem wiele kursów technicznych (JavaScript, React, C++, .NET) oraz zaawansowane szkolenie w Okten School. Obecnie kontynuuję studia informatyczne w Akademii Ekonomiczno-Humanistycznej w Warszawie.
-                </p>
-                <p>
-                    Komunikuję się płynnie w językach: 🇺🇦 ukraińskim (ojczysty), 🇵🇱 polskim (C2), 🇷🇺 rosyjskim (C1), 🇬🇧 angielskim (B1).
-                </p>
-                <p>
-                    Więcej o moich projektach znajdziesz na&nbsp;
-                    <a
-                        href="https://github.com/Keyn1991"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                    >
-                        GitHubie →
-                    </a>
-                </p>
-            </div>
-        </div>
+      <h1 className="page-title">{t.about.title}</h1>
+      <div className="section-card" style={{ marginTop: 0 }}>
+        {t.about.paragraphs.map((p, i) => (
+          <p key={i} style={{ marginBottom: 16 }}>
+            {p}
+          </p>
+        ))}
+        <p style={{ marginBottom: 0 }}>
+          <a href="https://github.com/Dmytro-Potapchuk" target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>
+            {t.about.githubCta} →
+          </a>
+        </p>
+      </div>
     </motion.div>
-);
+  );
+};
 
 export default About;

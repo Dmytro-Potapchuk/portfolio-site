@@ -1,107 +1,199 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import emailjs from 'emailjs-com';
+import { useLanguage } from '../context/LanguageContext';
+
+type FormStatus = 'idle' | 'success' | 'error';
 
 const ContactForm = () => {
-    const [form, setForm] = useState({ user_name: '', user_email: '', message: '' });
-    const [errors, setErrors] = useState({ user_name: '', user_email: '', message: '' });
-    const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
+  const formId = useId();
+  const [form, setForm] = useState({
+    user_name: '',
+    user_email: '',
+    user_subject: '',
+    message: '',
+    website: '',
+  });
+  const [errors, setErrors] = useState({ user_name: '', user_email: '', message: '' });
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<FormStatus>('idle');
 
-    const validate = () => {
-        const newErrors = { user_name: '', user_email: '', message: '' };
-        let valid = true;
+  const validate = () => {
+    const next = { user_name: '', user_email: '', message: '' };
+    let valid = true;
 
-        if (!form.user_name.trim()) {
-            newErrors.user_name = 'Imię jest wymagane';
-            valid = false;
-        }
-        if (!form.user_email.includes('@')) {
-            newErrors.user_email = 'Podaj poprawny email';
-            valid = false;
-        }
-        if (!form.message.trim()) {
-            newErrors.message = 'Wiadomość nie może być pusta';
-            valid = false;
-        }
+    if (!form.user_name.trim()) {
+      next.user_name = t.form.errors.name;
+      valid = false;
+    }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.user_email.trim());
+    if (!emailOk) {
+      next.user_email = t.form.errors.email;
+      valid = false;
+    }
+    if (form.message.trim().length < 4) {
+      next.message = t.form.errors.message;
+      valid = false;
+    }
 
-        setErrors(newErrors);
-        return valid;
+    setErrors(next);
+    return valid;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (status !== 'idle') setStatus('idle');
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('idle');
+
+    if (form.website.trim()) {
+      return;
+    }
+
+    if (!validate()) return;
+
+    const publicKey = 'HJ3-0GHe4Q4UpjSkh';
+    const serviceId = 'dmytro.potapchuk.dev';
+    const templateId = 'template_1b46bj4';
+
+    const payload = {
+      user_name: form.user_name.trim(),
+      user_email: form.user_email.trim(),
+      message: form.message.trim(),
+      user_subject: form.user_subject.trim() || '—',
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+    setLoading(true);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!validate()) return;
+    try {
+      await emailjs.send(serviceId, templateId, payload, publicKey);
+      setStatus('success');
+      setForm({ user_name: '', user_email: '', user_subject: '', message: '', website: '' });
+      setErrors({ user_name: '', user_email: '', message: '' });
+    } catch (err) {
+      console.error('EmailJS error:', err);
+      setStatus('error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const publicKey = 'HJ3-0GHe4Q4UpjSkh';
-        const serviceId = 'dmytro.potapchuk.dev';
-        const templateId = 'template_1b46bj4';
+  const msgLen = form.message.length;
 
-        setLoading(true);
+  return (
+    <form className="contact-form" onSubmit={handleSubmit} noValidate aria-describedby={`${formId}-status`}>
+      <div id={`${formId}-status`} role="status" aria-live="polite" className="sr-only">
+        {status === 'success' && t.form.success}
+        {status === 'error' && t.form.error}
+      </div>
 
-        try {
-            await emailjs.send(serviceId, templateId, form, publicKey);
-            alert('✅ Wiadomość wysłana!');
-            setForm({ user_name: '', user_email: '', message: '' });
-            setErrors({ user_name: '', user_email: '', message: '' });
-        } catch (error) {
-            console.error('EmailJS error:', error);
-            alert('❌ Błąd wysyłania.');
-        } finally {
-            setLoading(false);
-        }
-    };
+      {status === 'success' && (
+        <div className="form-status success" role="alert">
+          {t.form.success}
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="form-status error" role="alert">
+          {t.form.error}
+        </div>
+      )}
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-                <label htmlFor="user_name" className="block text-sm font-medium mb-1">Imię</label>
-                <input
-                    type="text"
-                    name="user_name"
-                    value={form.user_name}
-                    onChange={handleChange}
-                    placeholder="Twoje imię"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.user_name && <p className="text-red-500 text-sm mt-1">{errors.user_name}</p>}
-            </div>
-            <div>
-                <label htmlFor="user_email" className="block text-sm font-medium mb-1">Email</label>
-                <input
-                    type="email"
-                    name="user_email"
-                    value={form.user_email}
-                    onChange={handleChange}
-                    placeholder="Twój email"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.user_email && <p className="text-red-500 text-sm mt-1">{errors.user_email}</p>}
-            </div>
-            <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-1">Wiadomość</label>
-                <textarea
-                    name="message"
-                    value={form.message}
-                    onChange={handleChange}
-                    placeholder="Napisz wiadomość..."
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
-                />
-                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
-            </div>
-            <button
-                type="submit"
-                disabled={loading}
-                className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition ${
-                    loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-            >
-                {loading ? 'Wysyłanie...' : 'Wyślij wiadomość'}
-            </button>
-        </form>
-    );
+      <div className="hp-field" aria-hidden="true">
+        <label htmlFor={`${formId}-website`}>{t.form.honeypotLabel}</label>
+        <input
+          id={`${formId}-website`}
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={form.website}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div className="form-row">
+        <label htmlFor={`${formId}-name`}>{t.form.name}</label>
+        <input
+          id={`${formId}-name`}
+          type="text"
+          name="user_name"
+          autoComplete="name"
+          value={form.user_name}
+          onChange={handleChange}
+          placeholder={t.form.namePlaceholder}
+          aria-invalid={!!errors.user_name}
+          aria-describedby={errors.user_name ? `${formId}-err-name` : undefined}
+        />
+        {errors.user_name && (
+          <p id={`${formId}-err-name`} className="form-error">
+            {errors.user_name}
+          </p>
+        )}
+      </div>
+
+      <div className="form-row">
+        <label htmlFor={`${formId}-email`}>{t.form.email}</label>
+        <input
+          id={`${formId}-email`}
+          type="email"
+          name="user_email"
+          autoComplete="email"
+          value={form.user_email}
+          onChange={handleChange}
+          placeholder={t.form.emailPlaceholder}
+          aria-invalid={!!errors.user_email}
+          aria-describedby={errors.user_email ? `${formId}-err-email` : undefined}
+        />
+        {errors.user_email && (
+          <p id={`${formId}-err-email`} className="form-error">
+            {errors.user_email}
+          </p>
+        )}
+      </div>
+
+      <div className="form-row">
+        <label htmlFor={`${formId}-subject`}>{t.form.subject}</label>
+        <input
+          id={`${formId}-subject`}
+          type="text"
+          name="user_subject"
+          value={form.user_subject}
+          onChange={handleChange}
+          placeholder={t.form.subjectPlaceholder}
+          autoComplete="off"
+        />
+      </div>
+
+      <div className="form-row">
+        <label htmlFor={`${formId}-message`}>{t.form.message}</label>
+        <textarea
+          id={`${formId}-message`}
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          placeholder={t.form.messagePlaceholder}
+          aria-invalid={!!errors.message}
+          aria-describedby={`${formId}-msg-hint ${errors.message ? `${formId}-err-msg` : ''}`}
+        />
+        <p id={`${formId}-msg-hint`} className="form-hint">
+          {msgLen} {t.form.charCount}
+        </p>
+        {errors.message && (
+          <p id={`${formId}-err-msg`} className="form-error">
+            {errors.message}
+          </p>
+        )}
+      </div>
+
+      <button type="submit" className="form-submit" disabled={loading}>
+        {loading ? t.form.sending : t.form.submit}
+      </button>
+    </form>
+  );
 };
 
 export default ContactForm;
