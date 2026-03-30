@@ -43,7 +43,14 @@ Pliki w tym katalogu (gdy **nie** masz Caddy na 80/443 — tylko nginx na hości
 | **A** | `@` | `192.67.197.185` |
 | **A** | `www` | `192.67.197.185` |
 
-Sprawdź: `dig +short craftdev.pl A`
+Sprawdź (propagacja może trwać od kilku minut do ~48 h):
+
+```bash
+dig +short craftdev.pl A
+dig +short www.craftdev.pl A
+```
+
+Oba powinny zwracać `192.67.197.185`. W Windows: `nslookup craftdev.pl` oraz `nslookup www.craftdev.pl`.
 
 ---
 
